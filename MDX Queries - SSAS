@@ -1,0 +1,103 @@
+1.	Top 3 Reseller sales for all products based on cities in United States for all Fiscal Year.
+Query:
+SELECT
+   {[Measures].[Reseller Sales Amount],
+[Measures].[Internet Sales Amount],[Measures].[Sales Amount]} ON 0,
+TopCount
+   ({[Geography].[Geography].[City].Members
+      *[Date].[Fiscal].[Fiscal Year].Members}
+   , 3
+   , [Measures].[Reseller Sales Amount]
+   ) ON 1
+FROM [Adventure Works]
+WHERE
+[Geography].[Country].&[United States]
+
+
+2.	Top 8 Bike products sold of all times with how much each year it has been sold for each from total sales.
+Query:
+SELECT non empty [Date].[Calendar Year].MEMBERS on 0
+     , [Product].[Product].MEMBERS on 1
+  FROM (SELECT TOPCOUNT( [Product].[Product].CHILDREN
+                       , 8
+                       , [Measures].[Sales Amount]
+                       ) ON 0
+          FROM [Adventure Works]
+        )
+ WHERE [Measures].[Sales Amount]
+
+ 3.	Show Product wise sales by both internet sales amount and Reseller Sales amount for the fiscal quarter and month/ year.
+ Query:
+ SELECT NON EMPTY {[Measures].[Internet Sales Amount],
+ [Measures].[Reseller Sales Amount], [Measures].[Sales Amount]} on columns,
+ non empty crossjoin
+ ([Product].[Category].[Category],[Date].[Fiscal Quarter of Year].[Fiscal Quarter of Year],[Date].[Calendar].[Month]) on rows
+ from [Adventure Works];
+
+ 4.	Find internet sales, reseller sales and total sales of clothing only and order it based on sales amount:
+ Query:
+  select
+ {[Measures].[Internet Sales Amount],[Measures].[Reseller Sales Amount],[Measures].[Sales Amount]}
+ on columns,
+ order([Product].[Product Categories].[Subcategory],[Measures].[Sales Amount],basc)
+ on rows
+ from
+ [Adventure Works]
+ where [Product].[Category].&[3];
+
+
+ 5.	 Show the cities in United States where the total sales amount is more than 5000000 (5 Million) for all the product. (Using VisualTotals and without VisualTotals)
+ Query:
+ select
+ [Geography].[City].[City] on columns,
+ order(visualtotals (filter([Product].[Category].members, [Measures].[Sales Amount] > 5000000)),[Measures].[Sales Amount] , basc) on rows
+ from [Adventure Works]
+ where [Geography].[Country].&[United States];
+
+
+ 6.	What is the total reseller order count and reseller amount for the products (Chains, Breaks, Crank set,
+ Handle Bars, Road Bikes, Pumps, Locks, Helmets, Cleaners, Bottles ad Cages, Bike Stand and Racks), with promotional offers such (i). Seasonal Discount, (ii). Excess Inventory,
+ where the customer is Male, Year (2012,2013,2014) in all State-Province.
+
+ Query:
+ SELECT NON EMPTY {[Measures].[Reseller Order Count],[Measures].[Reseller Sales Amount]} ON COLUMNS,
+  NON EMPTY {([Date].[Calendar Year].[Calendar Year].ALLMEMBERS,[Geography].[Geography].[State-Province].ALLMEMBERS)}ON ROWS
+  FROM
+  (SELECT
+  ({[Promotion].[Promotion Type].&[Seasonal Discount],[Promotion].[Promotion Type].&[Excess Inventory]}) ON COLUMNS
+  FROM
+  (SELECT
+  ({[Product].[Product Categories].[Subcategory].&[26],[Product].[Product Categories].[Subcategory].&[27],
+  [Product].[Product Categories].[Subcategory].&[29],
+  [Product].[Product Categories].[Subcategory].&[34],[Product].[Product Categories].[Subcategory].&[36],
+  [Product].[Product Categories].[Subcategory].&[2],
+  [Product].[Product Categories].[Subcategory].&[31],
+  [Product].[Product Categories].[Subcategory].&[28],
+  [Product].[Product Categories].[Subcategory].&[4],
+  [Product].[Product Categories].[Subcategory].&[8],[Product].[Product Categories].[Subcategory].&[6],
+  [Product].[Product Categories].[Subcategory].&[7]}) ON COLUMNS
+  FROM
+  (SELECT
+  ({[Customer].[Gender].&[M]}) ON COLUMNS
+  FROM
+  (SELECT
+  (
+  {[Date].[Calendar Year].&[2014],[Date].[Calendar Year].&[2013],[Date].[Calendar Year].&[2012]}
+  ) ON COLUMNS
+  FROM [Adventure Works])
+  )
+  )
+  )
+
+
+
+  7.	Select all bikes and models that are red in colour which are sold in all country.
+  Query:
+  SELECT NON EMPTY { [Measures].[Internet Sales Amount], [Measures].[Reseller Sales Amount]} ON COLUMNS,
+  NON EMPTY { ([Product].[Product].[Product].ALLMEMBERS,
+  [Product].[Subcategory].[Subcategory].ALLMEMBERS,
+  [Geography].[Country].[Country].ALLMEMBERS , [Geography].[City].[City].ALLMEMBERS )
+  } ON ROWS 
+  FROM [Adventure Works]
+  WHERE (
+   [Product].[Color].&[Red] );
